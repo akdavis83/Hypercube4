@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hypercubes Visualization</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: black;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="hypercubeCanvas" width="1200" height="600" style="border:1px solid rgb(0, 0, 0); color: #056f0c;"></canvas>
+    <div>
+        <h1 style="color: #056f0c; position: absolute; top: 200px; left: 400px;">
+            H4: Tesseract Hypercube
+        </h1>
+    </div>
+    <script>
+        const canvas = document.getElementById("hypercubeCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Helper function to draw a line between two points
+        function drawLine(x1, y1, x2, y2) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            ctx.strokeStyle = "green";
+        }
+
+        // Generate vertices of an n-dimensional hypercube
+        function generateHypercubeVertices(dimensions) {
+            const vertices = [];
+            const totalVertices = Math.pow(2, dimensions);
+            for (let i = 0; i < totalVertices; i++) {
+                const vertex = [];
+                for (let j = 0; j < dimensions; j++) {
+                    vertex.push((i >> j) & 1);
+                }
+                vertices.push(vertex);
+            }
+            return vertices;
+        }
+
+        // Project n-dimensional vertices to 2D space
+        function projectTo2D(vertex, dimensions, scale = 100) {
+            const angle = Math.PI / 4; // 45-degree projection
+            let x = 0, y = 0;
+            for (let i = 0; i < dimensions; i++) {
+                x += vertex[i] * Math.cos(i * angle) * scale;
+                y += vertex[i] * Math.sin(i * angle) * scale;
+            }
+            return [x + canvas.width / 2, y + canvas.height / 2];
+        }
+
+        // Draw an n-dimensional hypercube
+        function drawHypercube(dimensions) {
+            const vertices = generateHypercubeVertices(dimensions);
+            const projectedVertices = vertices.map(v => projectTo2D(v, dimensions));
+
+            // Draw edges
+            vertices.forEach((v1, i) => {
+                vertices.forEach((v2, j) => {
+                    if (i < j && v1.reduce((acc, val, k) => acc + (val !== v2[k] ? 1 : 0), 0) === 1) {
+                        drawLine(
+                            projectedVertices[i][0],
+                            projectedVertices[i][1],
+                            projectedVertices[j][0],
+                            projectedVertices[j][1]
+                        );
+                    }
+                });
+            });
+        }
+
+        // Draw hypercubes H1 to H5
+        for (let i = 1; i <= 5; i++) {
+            drawHypercube(i);
+        }
+    </script>
+</body>
+</html>
